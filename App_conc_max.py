@@ -49,7 +49,7 @@ C_future = st.slider(
     min_value=0.0,
     max_value=200.0,
     value=40.0,
-    step=1.0
+    step=0.01
 )
 
 # -----------------------------
@@ -109,3 +109,4 @@ else:
         f"Concentration maximale autorisée jusqu'à la fin de la journée : "
         f"{max(0, C_max_autorisee):.1f} mg/m³"
     )
+
