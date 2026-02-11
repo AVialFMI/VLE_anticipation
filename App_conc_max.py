@@ -183,7 +183,7 @@ else:
     st.subheader("Résultats")
 
     st.metric(
-        label="Concentration réglée",
+        label="Concentration actuelle",
         value=f"{C_future:.2f} mg/m³"
     )
 
@@ -232,6 +232,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
