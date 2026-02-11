@@ -274,6 +274,7 @@ else:
     unsafe_allow_html=True
     )
 
+st.image("logo.png", width=180)
 
 
 
