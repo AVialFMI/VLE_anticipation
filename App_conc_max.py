@@ -274,11 +274,7 @@ else:
     unsafe_allow_html=True
     )
 
-# Utilisation d'une colonne unique pour centrer
-col_logo = st.columns([1, 2, 1])  # 3 colonnes : vide / image / vide
 
-with col_logo[1]:  # image au centre
-    st.image("logo.png", width=400)
 
 
 
