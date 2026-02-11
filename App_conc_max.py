@@ -136,20 +136,66 @@ st.divider()
 
 
 # ----------------------------------------------------------
-# JAUGE DE RÉGLAGE DE LA CONCENTRATION FUTURE
+# Entrée de la concentration à l'instant t ou simulation d'une concentration
 # ----------------------------------------------------------
 # Permet à l’exploitant de simuler la concentration
 # de fonctionnement jusqu’à 24h00.
 # Réglage fin à 0.01 mg/m³.
 # ----------------------------------------------------------
 
-C_future = st.slider(
-    "Concentration de fonctionnement actuelle (mg/Nm³)",
-    min_value=0.0,
-    max_value=200.0,
-    value=40.0,
-    step=0.01
-)
+import streamlit as st
+
+# Valeurs min, max et par défaut
+min_value = 0
+max_value = 300
+default_value = 50
+
+# Initialisation de la session_state si pas déjà défini
+if "value" not in st.session_state:
+    st.session_state.value = default_value
+
+# Callback pour synchroniser
+def update_slider():
+    st.session_state.value = st.session_state.slider_val
+
+def update_input():
+    st.session_state.value = st.session_state.input_val
+
+# Affichage des widgets
+col1, col2 = st.columns(2)
+
+with col1:
+    st.number_input(
+        "Entrez la valeur actuelle de concentration",
+        min_value=min_value,
+        max_value=max_value,
+        key="input_val",
+        value=st.session_state.value,
+        on_change=update_input
+    )
+
+with col2:
+    st.slider(
+        " Ou choisissez une valeur",
+        min_value=min_value,
+        max_value=max_value,
+        step = 0.01,
+        key="slider_val",
+        value=st.session_state.value,
+        on_change=update_slider
+    )    
+
+# Affichage de la valeur finale synchronisée
+
+C_future = st.session_state.value
+
+#C_future = st.slider(
+#    "Concentration de fonctionnement actuelle (mg/Nm³)",
+#    min_value=0.0,
+#    max_value=200.0,
+#    value=40.0,
+#    step=0.01
+#)
 
 
 # ----------------------------------------------------------
@@ -232,6 +278,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
