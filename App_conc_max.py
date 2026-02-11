@@ -183,7 +183,7 @@ with col2:
         on_change=update_slider
     )    
 
-# Affichage de la valeur finale synchronisée
+# Récupération de la valeur de concentration
 
 C_future = st.session_state.value
 
@@ -276,6 +276,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
