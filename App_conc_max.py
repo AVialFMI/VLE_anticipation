@@ -84,7 +84,7 @@ gaz = st.selectbox(
 # Récupération automatique de la VLE associée
 VLE_24H = VLE_DATABASE[gaz]
 
-st.info(f"VLE 24 h pour {gaz} : **{VLE_24H} mg/m³**")
+st.info(f"VLE 24 h pour {gaz} : **{VLE_24H} mg/Nm³**")
 
 
 # ----------------------------------------------------------
@@ -126,7 +126,7 @@ heure_actuelle = heure + minute / 60
 # ----------------------------------------------------------
 
 C_moy_actuelle = st.number_input(
-    "Concentration moyenne actuelle depuis 0h00 (mg/m³)",
+    "Concentration moyenne actuelle depuis 0h00 (mg/Nm³)",
     min_value=0.0,
     value=40.0,
     step=0.1
@@ -144,7 +144,7 @@ st.divider()
 # ----------------------------------------------------------
 
 C_future = st.slider(
-    "Concentration de fonctionnement jusqu'à la fin de la journée (mg/m³)",
+    "Concentration de fonctionnement actuelle (mg/Nm³)",
     min_value=0.0,
     max_value=200.0,
     value=40.0,
@@ -189,7 +189,7 @@ else:
 
     st.metric(
         label="Moyenne journalière estimée (24 h)",
-        value=f"{moyenne_finale:.2f} mg/m³"
+        value=f"{moyenne_finale:.2f} mg/Nm³"
     )
 
     # ------------------------------------------------------
@@ -227,11 +227,12 @@ else:
         text-align:center;
     ">
     Concentration maximale autorisée jusqu'à 24h00 : 
-    {C_max_autorisee:.2f} mg/m³
+    {C_max_autorisee:.2f} mg/Nm³
     </div>
     """,
     unsafe_allow_html=True
     )
+
 
 
 
