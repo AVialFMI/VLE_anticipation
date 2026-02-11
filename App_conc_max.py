@@ -24,10 +24,24 @@ import streamlit as st
 # ----------------------------------------------------------
 st.set_page_config(
     page_title="Anticipation VLE 24 h",
+    page_icon="logo.png",
     layout="centered"
 )
 
-st.title("Anticipation de dépassement VLE 24 h")
+# ----------------------------------------------------------
+# EN-TÊTE AVEC LOGO EN HAUT À GAUCHE
+# ----------------------------------------------------------
+col_logo, col_title = st.columns([1, 4])
+
+with col_logo:
+    st.image("logo.png", width=120)
+
+with col_title:
+    st.markdown("## Anticipation de dépassement VLE 24 h")
+    st.markdown(
+        "<span style='font-size:14px;'>Application interne – FMI Process</span>",
+        unsafe_allow_html=True
+    )
 
 st.markdown(
     """
@@ -218,6 +232,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
