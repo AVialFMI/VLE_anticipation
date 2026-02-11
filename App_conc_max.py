@@ -205,7 +205,7 @@ else:
     f"""
     <div style="
         background-color:#E8F4FD;
-        color:FF0000;
+        color:#FF0000;
         padding:15px;
         border-radius:10px;
         font-size:22px;
@@ -218,5 +218,6 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
