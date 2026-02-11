@@ -15,23 +15,61 @@ st.markdown(
 st.divider()
 
 # -----------------------------
-# PARAMÈTRES UTILISATEUR
+# VALEURS VLE 
 # -----------------------------
-VLE_24H = st.number_input(
-    "VLE 24 h (mg/m³)",
-    min_value=0.0,
-    value=50.0,
-    step=1.0
+VLE_DATABASE = {
+    "CO" : 50.0,
+    "COT" : 10.0,
+    "NOx" : 150.0,
+    "SO2" : 40.0,
+    "HCl" : 8.0,
+    "HF" : 1.0,
+    "Poussières" : 5.0,
+    "Mercure" : 20.0
+}
+                 
+
+# -----------------------------
+# CHOIX DU GAZ A ANTICIPER
+# -----------------------------
+gaz = st.selectbox(
+    "Choisissez le gaz",
+    list(VLE_DATABASE.keys())
 )
 
-heure_actuelle = st.slider(
-    "Heure actuelle (h)",
-    min_value=0.0,
-    max_value=24.0,
-    value=14.0,
-    step=0.25
-)
+VLE_24H = VLE_DATABASE[gaz]
 
+st.info(f"VLE 24 h pour {gaz} : **{VLE_24H} mg/m³**")
+
+# -----------------------------
+# HEURE ACTUELLE 
+# -----------------------------
+col1, col2 = st.columns(2)
+
+with col1:
+    heure = st.number_input(
+        "Heure",
+        min_value=0,
+        max_value=23,
+        value=14,
+        step=1
+    )
+
+with col2:
+    minute = st.number_input(
+        "Minute",
+        min_value=0,
+        max_value=59,
+        value=0,
+        step=1
+    )
+
+# Conversion en heure décimale
+heure_actuelle = heure + minute / 60
+
+# -----------------------------
+# CONCENTRATION ACTUELLE 
+# -----------------------------
 C_moy_actuelle = st.number_input(
     "Concentration moyenne actuelle (mg/m³)",
     min_value=0.0,
@@ -42,7 +80,7 @@ C_moy_actuelle = st.number_input(
 st.divider()
 
 # -----------------------------
-# JUGE / RÉGLAGE UTILISATEUR
+# JAUGE / RÉGLAGE UTILISATEUR
 # -----------------------------
 C_future = st.slider(
     "Concentration de fonctionnement jusqu'à la fin de la journée (mg/m³)",
@@ -109,4 +147,5 @@ else:
         f"Concentration maximale autorisée jusqu'à la fin de la journée : "
         f"{max(0, C_max_autorisee):.1f} mg/m³"
     )
+
 
