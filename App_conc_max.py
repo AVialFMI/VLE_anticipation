@@ -148,44 +148,34 @@ min_value = 0
 max_value = 300
 default_value = 50
 
-# Initialisation de la session_state si pas déjà défini
-if "value" not in st.session_state:
-    st.session_state.value = default_value
+# Initialisation de la valeur si nécessaire
+if "valeur" not in st.session_state:
+    st.session_state.valeur = default_value
 
-# Callback pour synchroniser
-def update_slider():
-    st.session_state.value = st.session_state.slider_val
-
-def update_input():
-    st.session_state.value = st.session_state.input_val
-
-# Affichage des widgets
+# Colonnes : input à gauche, slider à droite
 col1, col2 = st.columns(2)
 
 with col1:
     st.number_input(
-        "Entrez la valeur actuelle de concentration",
+        "Entrez la valeur",
         min_value=min_value,
         max_value=max_value,
-        key="input_val",
-        value=st.session_state.value,
-        on_change=update_input
+        key="valeur"
     )
 
 with col2:
     st.slider(
-        " Ou choisissez une valeur",
+        "Choisissez une valeur",
         min_value=min_value,
         max_value=max_value,
-        step = 0.01,
-        key="slider_val",
-        value=st.session_state.value,
-        on_change=update_slider
-    )    
+        key="valeur"
+    )
+
+st.write(f"Valeur choisie : {st.session_state.valeur}") 
 
 # Récupération de la valeur de concentration
 
-C_future = st.session_state.value
+C_future = st.session_state.valeur
 
 #C_future = st.slider(
 #    "Concentration de fonctionnement actuelle (mg/Nm³)",
@@ -276,6 +266,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
