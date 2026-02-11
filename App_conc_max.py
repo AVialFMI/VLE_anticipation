@@ -278,7 +278,8 @@ else:
 col_logo = st.columns([1, 2, 1])  # 3 colonnes : vide / image / vide
 
 with col_logo[1]:  # image au centre
-    st.image("logo.png", width=200)
+    st.image("logo.png", width=400)
+
 
 
 
