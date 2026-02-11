@@ -201,7 +201,20 @@ else:
     if C_max_autorisee <= 0:
         st.error("Dépassement déjà inévitable sur la journée.")
     else:
-        st.info(
-            f"Concentration maximale autorisée jusqu'à 24h00 : "
-            f"{C_max_autorisee:.2f} mg/m³"
-        )
+        st.markdown(
+    f"""
+    <div style="
+        background-color:#E8F4FD;
+        padding:15px;
+        border-radius:10px;
+        font-size:22px;
+        font-weight:bold;
+        text-align:center;
+    ">
+    Concentration maximale autorisée jusqu'à 24h00 : 
+    {C_max_autorisee:.2f} mg/m³
+    </div>
+    """,
+    unsafe_allow_html=True
+    )
+
