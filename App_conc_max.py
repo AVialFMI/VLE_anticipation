@@ -159,9 +159,9 @@ col1, col2 = st.columns(2)
 with col1:
     # --- Input numérique ---
     C_future_input = st.number_input(
-        "Entrer la concentration future (mg/m³)",
+        "Entrer la concentration actuelle (mg/m³)",
         min_value=0.0,
-        max_value=200.0,
+        max_value=300.0,
         value=st.session_state.C_future,
         step=0.01,
         key="C_future_input",
@@ -171,9 +171,9 @@ with col1:
 with col2:
     # --- Slider ---
     C_future_slider = st.slider(
-        "Ou ajuster la concentration future via slider (mg/m³)",
+        "Ou ajuster la concentration future via jauge (mg/m³)",
         min_value=0.0,
-        max_value=200.0,
+        max_value=300.0,
         value=st.session_state.C_future,
         step=0.01,
         key="C_future_slider",
@@ -273,6 +273,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
