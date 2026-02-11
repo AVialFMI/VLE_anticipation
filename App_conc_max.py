@@ -274,7 +274,16 @@ else:
     unsafe_allow_html=True
     )
 
-st.image("logo.png", width=150, use_column_width=False)
+st.markdown(
+    """
+    <div style='text-align: center; margin-top: 50px;'>
+        <img src='logo.png' style='width:150px; height:auto;'>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
 
 
