@@ -1,11 +1,27 @@
 import streamlit as st
-# AV (FMI Process) le 10/02/2025
-# Ce programme a pour but d'anticiper la concentration moyenne toléré pour éviter un dépassement de la VLE jour a la fin de la journée.
-# Il est utilisé sur nos sites d'incinération et concerne tous les gazs concernés par la réglementation
-# Développé en python streamlit pour permettre via github de créer une appli web acccessible a tous les exploitants
+
+# ==========================================================
+# APPLICATION : ANTICIPATION VLE 24H
+# Auteur : AV (FMI Process)
+# Date : 10/02/2025
+#
+# OBJECTIF :
+# Permettre aux exploitants d’anticiper un dépassement
+# de Valeur Limite d’Exposition (VLE) journalière
+# en ajustant la concentration de fonctionnement
+# jusqu’à la fin de la journée.
+#
+# UTILISATION :
+# Outil destiné aux sites d’incinération.
+# Applicable aux gaz réglementés.
+# Développé avec Streamlit pour mise à disposition web
+# via GitHub / Streamlit Cloud.
+# ==========================================================
 
 
-# Configureation du titre ainsi que de l'explication de l'outil
+# ----------------------------------------------------------
+# CONFIGURATION DE LA PAGE
+# ----------------------------------------------------------
 st.set_page_config(
     page_title="Anticipation VLE 24 h",
     layout="centered"
@@ -14,42 +30,56 @@ st.set_page_config(
 st.title("Anticipation de dépassement VLE 24 h")
 
 st.markdown(
-    "Outil d'aide au réglage de la concentration de fonctionnement "
-    "pour respecter une VLE journalière."
+    """
+    Outil d'aide au réglage de la concentration de fonctionnement
+    afin de respecter une Valeur Limite d'Exposition (VLE) journalière.
+    """
 )
 
 st.divider()
 
-# -----------------------------
-# VALEURS VLE 
-# -----------------------------
-VLE_DATABASE = {
-    "CO" : 50.0,
-    "COT" : 10.0,
-    "NOx" : 150.0,
-    "SO2" : 40.0,
-    "HCl" : 8.0,
-    "HF" : 1.0,
-    "Poussières" : 5.0,
-    "Mercure" : 20.0
-}
-                 
 
-# -----------------------------
-# CHOIX DU GAZ A ANTICIPER
-# -----------------------------
+# ----------------------------------------------------------
+# BASE DE DONNÉES DES VLE (mg/m³)
+# ----------------------------------------------------------
+# Dictionnaire contenant les VLE 24h réglementaires.
+# Ces valeurs peuvent être mises à jour selon évolution
+# réglementaire (Code du Travail, arrêtés ICPE, etc.).
+# ----------------------------------------------------------
+
+VLE_DATABASE = {
+    "CO": 50.0,
+    "COT": 10.0,
+    "NOx": 150.0,
+    "SO2": 40.0,
+    "HCl": 8.0,
+    "HF": 1.0,
+    "Poussières": 5.0,
+    "Mercure": 20.0
+}
+
+
+# ----------------------------------------------------------
+# SÉLECTION DU GAZ
+# ----------------------------------------------------------
 gaz = st.selectbox(
-    "Choisissez le gaz",
+    "Choisissez le gaz à anticiper",
     list(VLE_DATABASE.keys())
 )
 
+# Récupération automatique de la VLE associée
 VLE_24H = VLE_DATABASE[gaz]
 
 st.info(f"VLE 24 h pour {gaz} : **{VLE_24H} mg/m³**")
 
-# -----------------------------
-# HEURE ACTUELLE 
-# -----------------------------
+
+# ----------------------------------------------------------
+# SAISIE DE L'HEURE ACTUELLE
+# ----------------------------------------------------------
+# L’heure est saisie en format HH / MM
+# puis convertie en heure décimale pour les calculs.
+# ----------------------------------------------------------
+
 col1, col2 = st.columns(2)
 
 with col1:
@@ -73,21 +103,32 @@ with col2:
 # Conversion en heure décimale
 heure_actuelle = heure + minute / 60
 
-# -----------------------------
-# CONCENTRATION ACTUELLE 
-# -----------------------------
+
+# ----------------------------------------------------------
+# SAISIE DE LA MOYENNE ACTUELLE
+# ----------------------------------------------------------
+# Concentration moyenne mesurée depuis 0h00
+# jusqu'à l'heure actuelle.
+# ----------------------------------------------------------
+
 C_moy_actuelle = st.number_input(
-    "Concentration moyenne actuelle (mg/m³)",
+    "Concentration moyenne actuelle depuis 0h00 (mg/m³)",
     min_value=0.0,
     value=40.0,
-    step=1.0
+    step=0.1
 )
 
 st.divider()
 
-# -----------------------------
-# JAUGE / RÉGLAGE UTILISATEUR
-# -----------------------------
+
+# ----------------------------------------------------------
+# JAUGE DE RÉGLAGE DE LA CONCENTRATION FUTURE
+# ----------------------------------------------------------
+# Permet à l’exploitant de simuler la concentration
+# de fonctionnement jusqu’à 24h00.
+# Réglage fin à 0.01 mg/m³.
+# ----------------------------------------------------------
+
 C_future = st.slider(
     "Concentration de fonctionnement jusqu'à la fin de la journée (mg/m³)",
     min_value=0.0,
@@ -96,63 +137,71 @@ C_future = st.slider(
     step=0.01
 )
 
-# -----------------------------
+
+# ----------------------------------------------------------
 # CALCULS
-# -----------------------------
+# ----------------------------------------------------------
 heure_debut = 0.0
 heure_fin = 24.0
 
 t_ecoule = heure_actuelle - heure_debut
 t_restant = heure_fin - heure_actuelle
 
+
+# ----------------------------------------------------------
+# GESTION CAS LIMITE : FIN DE JOURNÉE
+# ----------------------------------------------------------
 if t_restant <= 0:
-    st.error("La journée est terminée : aucun temps restant.")
+    st.error("La journée est terminée : aucun temps restant pour ajustement.")
 else:
+
+    # ------------------------------------------------------
+    # CALCUL MOYENNE 24H ESTIMÉE
+    # Formule :
+    # (C_moy * t_ecoulé + C_future * t_restant) / 24
+    # ------------------------------------------------------
     moyenne_finale = (
         C_moy_actuelle * t_ecoule +
         C_future * t_restant
     ) / 24
 
     st.divider()
-
     st.subheader("Résultats")
 
     st.metric(
         label="Concentration réglée",
-        value=f"{C_future:.1f} mg/m³"
+        value=f"{C_future:.2f} mg/m³"
     )
 
     st.metric(
         label="Moyenne journalière estimée (24 h)",
-        value=f"{moyenne_finale:.1f} mg/m³"
+        value=f"{moyenne_finale:.2f} mg/m³"
     )
 
+    # ------------------------------------------------------
+    # ÉVALUATION DU TAUX PAR RAPPORT À LA VLE
+    # ------------------------------------------------------
     taux = moyenne_finale / VLE_24H if VLE_24H > 0 else 0
 
     if moyenne_finale > VLE_24H:
-        st.error(
-            f"⚠ Dépassement de la VLE 24 h ({taux*100:.0f} %)"
-        )
+        st.error(f"🔴 Dépassement de la VLE ({taux*100:.0f} %)")
     elif taux >= 0.8:
-        st.warning(
-            f"🟠 Proche de la limite ({taux*100:.0f} % de la VLE)"
-        )
+        st.warning(f"🟠 Proche de la limite ({taux*100:.0f} % de la VLE)")
     else:
-        st.success(
-            f"✔ Conforme ({taux*100:.0f} % de la VLE)"
-        )
+        st.success(f"🟢 Conforme ({taux*100:.0f} % de la VLE)")
 
-    # -----------------------------
-    # INFO UTILE EN PLUS
-    # -----------------------------
+    # ------------------------------------------------------
+    # CALCUL DE LA CONCENTRATION MAXIMALE AUTORISÉE
+    # ------------------------------------------------------
     C_max_autorisee = (
-        VLE_24H * 24 - C_moy_actuelle * t_ecoule
+        (VLE_24H * 24) - (C_moy_actuelle * t_ecoule)
     ) / t_restant
 
-    st.info(
-        f"Concentration maximale autorisée jusqu'à la fin de la journée : "
-        f"{max(0, C_max_autorisee):.1f} mg/m³"
-    )
-
-
-
+    # Gestion cas dépassement déjà inévitable
+    if C_max_autorisee <= 0:
+        st.error("Dépassement déjà inévitable sur la journée.")
+    else:
+        st.info(
+            f"Concentration maximale autorisée jusqu'à 24h00 : "
+            f"{C_max_autorisee:.2f} mg/m³"
+        )
