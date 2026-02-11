@@ -1,5 +1,11 @@
 import streamlit as st
+# AV (FMI Process) le 10/02/2025
+# Ce programme a pour but d'anticiper la concentration moyenne toléré pour éviter un dépassement de la VLE jour a la fin de la journée.
+# Il est utilisé sur nos sites d'incinération et concerne tous les gazs concernés par la réglementation
+# Développé en python streamlit pour permettre via github de créer une appli web acccessible a tous les exploitants
 
+
+# Configureation du titre ainsi que de l'explication de l'outil
 st.set_page_config(
     page_title="Anticipation VLE 24 h",
     layout="centered"
@@ -147,5 +153,6 @@ else:
         f"Concentration maximale autorisée jusqu'à la fin de la journée : "
         f"{max(0, C_max_autorisee):.1f} mg/m³"
     )
+
 
 
