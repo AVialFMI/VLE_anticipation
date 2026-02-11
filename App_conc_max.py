@@ -143,8 +143,6 @@ st.divider()
 # Réglage fin à 0.01 mg/m³.
 # ----------------------------------------------------------
 
-import streamlit as st
-
 # Valeurs min, max et par défaut
 min_value = 0
 max_value = 300
@@ -278,6 +276,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
