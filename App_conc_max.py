@@ -274,14 +274,12 @@ else:
     unsafe_allow_html=True
     )
 
-st.markdown(
-    """
-    <div style='text-align: center; margin-top: 50px;'>
-        <img src='logo.png'; style='width:150px; height:auto;'>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# Utilisation d'une colonne unique pour centrer
+col_logo = st.columns([1, 2, 1])  # 3 colonnes : vide / image / vide
+
+with col_logo[1]:  # image au centre
+    st.image("logo.png", width=150
+
 
 
 
