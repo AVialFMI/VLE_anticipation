@@ -274,7 +274,8 @@ else:
     unsafe_allow_html=True
     )
 
-st.image("logo.png", width=200, use_column_width=False)
+st.image("logo.png", width=180, use_column_width=False)
+
 
 
 
