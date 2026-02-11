@@ -143,39 +143,42 @@ st.divider()
 # Réglage fin à 0.01 mg/m³.
 # ----------------------------------------------------------
 
-# Valeurs min, max et par défaut
-min_value = 0
-max_value = 300
-default_value = 50
+# --- Définir une valeur par défaut dans session_state si nécessaire ---
+if "C_future" not in st.session_state:
+    st.session_state.C_future = 40.0
 
-# Initialisation de la valeur si nécessaire
-if "valeur" not in st.session_state:
-    st.session_state.valeur = default_value
+# --- Fonction de mise à jour ---
+def update_slider():
+    st.session_state.C_future_slider = st.session_state.C_future_input
 
-# Colonnes : input à gauche, slider à droite
-col1, col2 = st.columns(2)
+def update_input():
+    st.session_state.C_future_input = st.session_state.C_future_slider
 
-with col1:
-    st.number_input(
-        "Entrez la valeur",
-        min_value=min_value,
-        max_value=max_value,
-        key="valeur"
-    )
+# --- Input numérique ---
+C_future_input = st.number_input(
+    "Entrer la concentration future (mg/m³)",
+    min_value=0.0,
+    max_value=200.0,
+    value=st.session_state.C_future,
+    step=0.01,
+    key="C_future_input",
+    on_change=update_slider
+)
 
-with col2:
-    st.slider(
-        "Choisissez une valeur",
-        min_value=min_value,
-        max_value=max_value,
-        key="valeur"
-    )
+# --- Slider ---
+C_future_slider = st.slider(
+    "Ou ajuster la concentration future via slider (mg/m³)",
+    min_value=0.0,
+    max_value=200.0,
+    value=st.session_state.C_future,
+    step=0.01,
+    key="C_future_slider",
+    on_change=update_input
+)
 
-st.write(f"Valeur choisie : {st.session_state.valeur}") 
+# --- Valeur finale utilisée dans les calculs ---
+C_future = st.session_state.C_future_input
 
-# Récupération de la valeur de concentration
-
-C_future = st.session_state.valeur
 
 #C_future = st.slider(
 #    "Concentration de fonctionnement actuelle (mg/Nm³)",
@@ -266,6 +269,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
