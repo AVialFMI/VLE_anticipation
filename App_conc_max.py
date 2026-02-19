@@ -126,7 +126,7 @@ heure_actuelle = heure + minute / 60
 # ----------------------------------------------------------
 
 C_moy_actuelle = st.number_input(
-    "Concentration moyenne actuelle depuis 0h00 (mg/Nm³)",
+    "Entrez la moyenne journalière actuelle (mg/Nm³)",
     min_value=0.0,
     value=40.0,
     step=0.1
@@ -159,7 +159,7 @@ col1, col2 = st.columns(2)
 with col1:
     # --- Input numérique ---
     C_future_input = st.number_input(
-        "Entrer la concentration actuelle (mg/m³)",
+        "Entrer la concentration actuelle (mg/Nm³)",
         min_value=0.0,
         max_value=300.0,
         value=st.session_state.C_future,
@@ -171,7 +171,7 @@ with col1:
 with col2:
     # --- Slider ---
     C_future_slider = st.slider(
-        "Ou ajuster la concentration future via jauge (mg/m³)",
+        "Ou ajuster la concentration via jauge (mg/Nm³)",
         min_value=0.0,
         max_value=300.0,
         value=st.session_state.C_future,
@@ -182,16 +182,6 @@ with col2:
 
 # --- Valeur finale utilisée dans les calculs ---
 C_future = st.session_state.C_future_input
-
-
-#C_future = st.slider(
-#    "Concentration de fonctionnement actuelle (mg/Nm³)",
-#    min_value=0.0,
-#    max_value=200.0,
-#    value=40.0,
-#    step=0.01
-#)
-
 
 # ----------------------------------------------------------
 # CALCULS
@@ -273,27 +263,3 @@ else:
     """,
     unsafe_allow_html=True
     )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
