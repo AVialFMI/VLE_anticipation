@@ -102,7 +102,7 @@ choix = st.radio(
 )
 
 if choix == "Heure actuelle":
-    now = datetime.now(ZoneInfo("Paris"))
+    now = datetime.now(ZoneInfo("Europe/Paris"))
     heure = now.hour
     minute = now.minute
     st.success(f"Heure sélectionnée : {heure:02d}:{minute:02d}")
@@ -277,6 +277,7 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
 
