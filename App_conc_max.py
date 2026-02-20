@@ -94,25 +94,37 @@ st.info(f"VLE 24 h pour {gaz} : **{VLE_24H} mg/Nm³**")
 # puis convertie en heure décimale pour les calculs.
 # ----------------------------------------------------------
 
-col1, col2 = st.columns(2)
+choix = st.radio(
+    "Choisir l'heure :",
+    ["Heure actuelle", "Régler manuellement"]
+)
 
-with col1:
-    heure = st.number_input(
-        "Heure",
-        min_value=0,
-        max_value=23,
-        value=14,
-        step=1
-    )
+if choix == "Heure actuelle":
+    now = datetime.now()
+    heure = now.hour
+    minute = now.minute
+    st.success(f"Heure sélectionnée : {heure:02d}:{minute:02d}")
 
-with col2:
-    minute = st.number_input(
-        "Minute",
-        min_value=0,
-        max_value=59,
-        value=0,
-        step=1
-    )
+else:
+    col1, col2 = st.columns(2)
+
+    with col1:
+        heure = st.number_input(
+            "Heure",
+            min_value=0,
+            max_value=23,
+            value=14,
+            step=1
+        )
+
+    with col2:
+        minute = st.number_input(
+            "Minute",
+            min_value=0,
+            max_value=59,
+            value=0,
+            step=1
+        )
 
 # Conversion en heure décimale
 heure_actuelle = heure + minute / 60
@@ -263,3 +275,4 @@ else:
     """,
     unsafe_allow_html=True
     )
+
