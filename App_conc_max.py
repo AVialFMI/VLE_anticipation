@@ -1,5 +1,5 @@
 import streamlit as st
-import datetime as dt 
+from datetime import datetime 
 
 # ==========================================================
 # APPLICATION : ANTICIPATION VLE 24H
@@ -101,7 +101,7 @@ choix = st.radio(
 )
 
 if choix == "Heure actuelle":
-    now = dt.now()
+    now = datetime.now()
     heure = now.hour
     minute = now.minute
     st.success(f"Heure sélectionnée : {heure:02d}:{minute:02d}")
@@ -276,5 +276,6 @@ else:
     """,
     unsafe_allow_html=True
     )
+
 
 
