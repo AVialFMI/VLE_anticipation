@@ -643,16 +643,11 @@ else:
             text-align: center;
         ">
 
-        CONCENTRATION À NE PAS DÉPASSER
-
+        CONCENTRATION À NE PAS DÉPASSER POUR RESPECT VLE JOUR
         <br><br>
-
         {C_max_autorisee:.2f} mg/Nm³
-
         <br><br>
-
-        jusqu'à 24h00
-
+        jusqu'à minuit
         </div>
         """,
         unsafe_allow_html=True,
