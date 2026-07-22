@@ -1,285 +1,791 @@
 import streamlit as st
 from zoneinfo import ZoneInfo
-from datetime import datetime 
+from datetime import datetime
+
 
 # ==========================================================
-# APPLICATION : ANTICIPATION VLE 24H
-# Auteur : AV (FMI Process)
-# Date : 10/02/2025
+# APPLICATION : ANTICIPATION VLE 24 H
+# ==========================================================
 #
 # OBJECTIF :
-# Permettre aux exploitants d’anticiper un dépassement
-# de Valeur Limite d’Exposition (VLE) journalière
-# en ajustant la concentration de fonctionnement
-# jusqu’à la fin de la journée.
+# Cette application permet de calculer la concentration maximale
+# à ne pas dépasser jusqu'à la fin de la journée (24h00).
 #
-# UTILISATION :
-# Outil destiné aux sites d’incinération.
-# Applicable aux gaz réglementés.
-# Développé avec Streamlit pour mise à disposition web
-# via GitHub / Streamlit Cloud.
+# Le calcul permet d'anticiper le respect d'une VLE journalière.
+#
+# L'utilisateur renseigne :
+#   1. Le gaz concerné
+#   2. Si la ligne a démarré en cours de journée
+#   3. L'heure de démarrage si nécessaire
+#   4. La moyenne actuelle mesurée
+#
+# L'application calcule ensuite :
+#
+#   → La concentration maximale à ne pas dépasser
+#     jusqu'à 24h00.
+#
+# L'heure actuelle est récupérée automatiquement
+# selon le fuseau horaire Europe/Paris.
+#
 # ==========================================================
 
 
 # ----------------------------------------------------------
 # CONFIGURATION DE LA PAGE
 # ----------------------------------------------------------
+#
+# Cette fonction configure l'apparence générale
+# de la page Streamlit.
+#
+# page_title :
+#     Nom affiché dans l'onglet du navigateur.
+#
+# page_icon :
+#     Logo utilisé comme icône de la page.
+#
+# layout :
+#     "centered" permet de centrer l'application.
+#
+# ----------------------------------------------------------
+
 st.set_page_config(
     page_title="Anticipation VLE 24 h",
     page_icon="logo.png",
     layout="centered"
 )
 
+
 # ----------------------------------------------------------
-# EN-TÊTE AVEC LOGO EN HAUT À GAUCHE
+# EN-TÊTE DE L'APPLICATION
 # ----------------------------------------------------------
+#
+# On crée deux colonnes :
+#
+#   - colonne de gauche : logo
+#   - colonne de droite : titre
+#
+# Le ratio [1, 4] signifie que la deuxième colonne
+# est environ quatre fois plus large que la première.
+#
+# ----------------------------------------------------------
+
 col_logo, col_title = st.columns([1, 4])
 
+
+# Affichage du logo
+
 with col_logo:
-    st.image("logo.png", width=120)
+
+    st.image(
+        "logo.png",
+        width=120
+    )
+
+
+# Affichage du titre
 
 with col_title:
-    st.markdown("## Anticipation de dépassement VLE 24 h")
+
     st.markdown(
-        "<span style='font-size:14px;'>Application interne – FMI Process</span>",
+        "## Anticipation de dépassement VLE 24 h"
+    )
+
+    st.markdown(
+        """
+        <span style='font-size:14px;'>
+        Application interne – FMI Process
+        </span>
+        """,
         unsafe_allow_html=True
     )
 
+
+# Description de l'application
+
 st.markdown(
     """
-    Outil d'aide au réglage de la concentration de fonctionnement
-    afin de respecter une Valeur Limite d'Exposition (VLE) journalière.
+    Outil permettant de déterminer la concentration maximale
+    à ne pas dépasser jusqu'à 24h00 afin de respecter
+    la Valeur Limite d'Exposition (VLE).
     """
 )
+
+
+# Ligne de séparation visuelle
 
 st.divider()
 
 
-# ----------------------------------------------------------
-# BASE DE DONNÉES DES VLE (mg/m³)
-# ----------------------------------------------------------
-# Dictionnaire contenant les VLE 24h réglementaires.
-# Ces valeurs peuvent être mises à jour selon évolution
-# réglementaire (Code du Travail, arrêtés ICPE, etc.).
+# ==========================================================
+# BASE DE DONNÉES DES VLE
+# ==========================================================
+#
+# Ce dictionnaire contient les VLE associées à chaque gaz.
+#
+# Exemple :
+#
+#     "CO": 50.0
+#
+# signifie que la VLE du CO est de 50 mg/Nm³.
+#
+# Pour ajouter un nouveau gaz, il suffit d'ajouter une ligne :
+#
+#     "Nouveau gaz": valeur
+#
 # ----------------------------------------------------------
 
 VLE_DATABASE = {
+
     "CO": 50.0,
+
     "COT": 10.0,
+
     "NOx": 150.0,
+
     "SO2": 40.0,
+
     "HCl": 8.0,
+
     "HF": 1.0,
+
     "Poussières": 5.0,
+
     "Mercure": 20.0
+
 }
 
 
+# ==========================================================
+# CHOIX DU GAZ
+# ==========================================================
+#
+# La fonction selectbox crée une liste déroulante.
+#
+# L'utilisateur choisit le gaz qu'il souhaite anticiper.
+#
+# La liste des choix est automatiquement créée à partir
+# des clés du dictionnaire VLE_DATABASE.
+#
 # ----------------------------------------------------------
-# SÉLECTION DU GAZ
-# ----------------------------------------------------------
+
 gaz = st.selectbox(
+
     "Choisissez le gaz à anticiper",
+
     list(VLE_DATABASE.keys())
+
 )
 
-# Récupération automatique de la VLE associée
+
+# ----------------------------------------------------------
+# RÉCUPÉRATION AUTOMATIQUE DE LA VLE
+# ----------------------------------------------------------
+#
+# Exemple :
+#
+# Si l'utilisateur choisit "HCl" :
+#
+#     gaz = "HCl"
+#
+# alors :
+#
+#     VLE_24H = 8.0
+#
+# ----------------------------------------------------------
+
 VLE_24H = VLE_DATABASE[gaz]
 
-st.info(f"VLE 24 h pour {gaz} : **{VLE_24H} mg/Nm³**")
 
+# Affichage de la VLE correspondante
 
-# ----------------------------------------------------------
-# SAISIE DE L'HEURE ACTUELLE
-# ----------------------------------------------------------
-# L’heure est saisie en format HH / MM
-# puis convertie en heure décimale pour les calculs.
-# ----------------------------------------------------------
+st.info(
 
-choix = st.radio(
-    "Choisir l'heure :",
-    ["Heure actuelle", "Régler manuellement"]
+    f"VLE 24 h pour {gaz} : "
+    f"**{VLE_24H} mg/Nm³**"
+
 )
 
-if choix == "Heure actuelle":
-    now = datetime.now(ZoneInfo("Europe/Paris"))
-    heure = now.hour
-    minute = now.minute
-    st.success(f"Heure sélectionnée : {heure:02d}:{minute:02d}")
 
-else:
+# ==========================================================
+# RÉCUPÉRATION AUTOMATIQUE DE L'HEURE ACTUELLE
+# ==========================================================
+#
+# L'heure actuelle est récupérée automatiquement.
+#
+# Il n'est pas possible de la modifier manuellement.
+#
+# ZoneInfo("Europe/Paris") permet d'utiliser l'heure
+# française avec la gestion de l'heure d'été et d'hiver.
+#
+# ----------------------------------------------------------
+
+now = datetime.now(
+
+    ZoneInfo("Europe/Paris")
+
+)
+
+
+# Récupération de l'heure
+
+heure = now.hour
+
+
+# Récupération des minutes
+
+minute = now.minute
+
+
+# ----------------------------------------------------------
+# CONVERSION DE L'HEURE EN HEURE DÉCIMALE
+# ----------------------------------------------------------
+#
+# Exemple :
+#
+# 14h30 devient :
+#
+#     14 + 30 / 60
+#
+#     = 14.5 heures
+#
+# Cette conversion facilite les calculs de durée.
+#
+# ----------------------------------------------------------
+
+heure_actuelle = (
+
+    heure
+    +
+    minute / 60
+
+)
+
+
+# Affichage de l'heure actuelle
+
+st.success(
+
+    f"Heure actuelle : "
+    f"{heure:02d}:{minute:02d}"
+
+)
+
+
+# ==========================================================
+# DÉMARRAGE DE LA LIGNE
+# ==========================================================
+#
+# L'utilisateur indique si la ligne a démarré
+# en cours de journée.
+#
+# Exemple :
+#
+#   Non :
+#       La ligne fonctionnait déjà à 00h00.
+#       Le calcul commence donc à 00h00.
+#
+#   Oui :
+#       La ligne a démarré à une heure précise.
+#       Le calcul commence à cette heure.
+#
+# ----------------------------------------------------------
+
+demarrage_journee = st.checkbox(
+
+    "La ligne a-t-elle démarré en cours de journée ?",
+
+    value=False
+
+)
+
+
+# ==========================================================
+# CAS 1 : LA LIGNE A DÉMARRÉ EN COURS DE JOURNÉE
+# ==========================================================
+
+if demarrage_journee:
+
+
+    # Information affichée à l'utilisateur
+
+    st.info(
+
+        "Le calcul commencera à l'heure "
+        "de démarrage de la ligne."
+
+    )
+
+
+    # Création de deux colonnes :
+    #
+    #   Colonne 1 : heure
+    #   Colonne 2 : minute
+
     col1, col2 = st.columns(2)
 
+
+    # ------------------------------------------------------
+    # SAISIE DE L'HEURE DE DÉMARRAGE
+    # ------------------------------------------------------
+
     with col1:
-        heure = st.number_input(
-            "Heure",
+
+        heure_demarrage = st.number_input(
+
+            "Heure de démarrage",
+
             min_value=0,
+
             max_value=23,
-            value=14,
+
+            value=8,
+
             step=1
+
         )
+
+
+    # ------------------------------------------------------
+    # SAISIE DE LA MINUTE DE DÉMARRAGE
+    # ------------------------------------------------------
 
     with col2:
-        minute = st.number_input(
-            "Minute",
+
+        minute_demarrage = st.number_input(
+
+            "Minute de démarrage",
+
             min_value=0,
+
             max_value=59,
+
             value=0,
+
             step=1
+
         )
 
-# Conversion en heure décimale
-heure_actuelle = heure + minute / 60
+
+    # ------------------------------------------------------
+    # CONVERSION DE L'HEURE DE DÉMARRAGE
+    # ------------------------------------------------------
+    #
+    # Exemple :
+    #
+    #     08h30
+    #
+    # devient :
+    #
+    #     8 + 30 / 60
+    #
+    #     = 8.5 heures
+    #
+    # ------------------------------------------------------
+
+    heure_debut = (
+
+        heure_demarrage
+        +
+        minute_demarrage / 60
+
+    )
 
 
+# ==========================================================
+# CAS 2 : LA LIGNE ÉTAIT DÉJÀ EN FONCTIONNEMENT À 00H00
+# ==========================================================
+
+else:
+
+
+    # Information affichée à l'utilisateur
+
+    st.info(
+
+        "La ligne était déjà en fonctionnement à 00:00. "
+        "Le calcul commencera depuis 00:00."
+
+    )
+
+
+    # Dans ce cas, le début de la période de calcul
+    # est fixé à minuit.
+
+    heure_debut = 0.0
+
+
+# ==========================================================
+# VÉRIFICATION DE LA COHÉRENCE DE L'HEURE
+# ==========================================================
+#
+# Il est impossible que la ligne ait démarré
+# dans le futur.
+#
+# Exemple interdit :
+#
+#     Heure actuelle : 14h00
+#     Démarrage       : 16h00
+#
 # ----------------------------------------------------------
+
+if heure_debut > heure_actuelle:
+
+
+    st.error(
+
+        "L'heure de démarrage ne peut pas être "
+        "postérieure à l'heure actuelle."
+
+    )
+
+
+    # Arrêt du programme
+
+    st.stop()
+
+
+# ==========================================================
 # SAISIE DE LA MOYENNE ACTUELLE
-# ----------------------------------------------------------
-# Concentration moyenne mesurée depuis 0h00
-# jusqu'à l'heure actuelle.
+# ==========================================================
+#
+# L'utilisateur indique la moyenne mesurée jusqu'à présent.
+#
+# Exemple :
+#
+#     Heure actuelle : 14h00
+#     Moyenne actuelle : 40 mg/Nm³
+#
+# Cette valeur représente la concentration moyenne
+# sur la période déjà écoulée.
+#
 # ----------------------------------------------------------
 
 C_moy_actuelle = st.number_input(
-    "Entrez la moyenne journalière actuelle (mg/Nm³)",
+
+    "Entrez la moyenne actuelle mesurée (mg/Nm³)",
+
     min_value=0.0,
+
     value=40.0,
+
     step=0.1
+
 )
 
-st.divider()
 
-
+# ==========================================================
+# CALCUL DES DURÉES
+# ==========================================================
+#
+# Heure de fin de la journée :
+#
+#     24h00
+#
 # ----------------------------------------------------------
-# Entrée de la concentration à l'instant t ou simulation d'une concentration
-# ----------------------------------------------------------
-# Permet à l’exploitant de simuler la concentration
-# de fonctionnement jusqu’à 24h00.
-# Réglage fin à 0.01 mg/m³.
-# ----------------------------------------------------------
 
-# --- Définir une valeur par défaut dans session_state si nécessaire ---
-if "C_future" not in st.session_state:
-    st.session_state.C_future = 40.0
-
-# --- Fonction de mise à jour ---
-def update_slider():
-    st.session_state.C_future_slider = st.session_state.C_future_input
-
-def update_input():
-    st.session_state.C_future_input = st.session_state.C_future_slider
-
-col1, col2 = st.columns(2)
-
-with col1:
-    # --- Input numérique ---
-    C_future_input = st.number_input(
-        "Entrer la concentration actuelle (mg/Nm³)",
-        min_value=0.0,
-        max_value=300.0,
-        value=st.session_state.C_future,
-        step=0.01,
-        key="C_future_input",
-        on_change=update_slider
-    )
-
-with col2:
-    # --- Slider ---
-    C_future_slider = st.slider(
-        "Ou ajuster la concentration via jauge (mg/Nm³)",
-        min_value=0.0,
-        max_value=300.0,
-        value=st.session_state.C_future,
-        step=0.01,
-        key="C_future_slider",
-        on_change=update_input
-    )
-
-# --- Valeur finale utilisée dans les calculs ---
-C_future = st.session_state.C_future_input
-
-# ----------------------------------------------------------
-# CALCULS
-# ----------------------------------------------------------
-heure_debut = 0.0
 heure_fin = 24.0
 
-t_ecoule = heure_actuelle - heure_debut
-t_restant = heure_fin - heure_actuelle
+
+# ----------------------------------------------------------
+# TEMPS ÉCOULÉ
+# ----------------------------------------------------------
+#
+# Le temps écoulé correspond à :
+#
+#     Heure actuelle - Heure de début
+#
+# Exemple :
+#
+#     Début       : 08h00
+#     Maintenant  : 14h00
+#
+#     Temps écoulé = 14 - 8 = 6 heures
+#
+# ----------------------------------------------------------
+
+t_ecoule = (
+
+    heure_actuelle
+    -
+    heure_debut
+
+)
 
 
 # ----------------------------------------------------------
-# GESTION CAS LIMITE : FIN DE JOURNÉE
+# TEMPS RESTANT
 # ----------------------------------------------------------
+#
+# Le temps restant correspond à :
+#
+#     24h00 - Heure actuelle
+#
+# Exemple :
+#
+#     Heure actuelle : 14h00
+#
+#     Temps restant = 24 - 14 = 10 heures
+#
+# ----------------------------------------------------------
+
+t_restant = (
+
+    heure_fin
+    -
+    heure_actuelle
+
+)
+
+
+# ----------------------------------------------------------
+# DURÉE TOTALE DE LA PÉRIODE
+# ----------------------------------------------------------
+#
+# Exemple avec un démarrage à 08h00 :
+#
+#     Temps écoulé : 6 heures
+#     Temps restant : 10 heures
+#
+#     Durée totale = 6 + 10
+#                   = 16 heures
+#
+# ----------------------------------------------------------
+
+duree_totale = (
+
+    t_ecoule
+    +
+    t_restant
+
+)
+
+
+# ==========================================================
+# CALCUL DE LA CONCENTRATION MAXIMALE À NE PAS DÉPASSER
+# ==========================================================
+#
+# Objectif :
+#
+# Déterminer la concentration maximale qui peut être
+# maintenue pendant le temps restant sans dépasser la VLE.
+#
+# Formule :
+#
+# C_max =
+#
+#     (VLE × durée totale
+#      - moyenne actuelle × temps écoulé)
+#
+#     / temps restant
+#
+# ----------------------------------------------------------
+
 if t_restant <= 0:
-    st.error("La journée est terminée : aucun temps restant pour ajustement.")
+
+
+    # Si l'heure actuelle est 24h00 ou plus,
+    # il n'y a plus de temps pour agir.
+
+    st.error(
+
+        "La journée est terminée : "
+        "aucun temps restant."
+
+    )
+
+
 else:
 
+
     # ------------------------------------------------------
-    # CALCUL MOYENNE 24H ESTIMÉE
-    # Formule :
-    # (C_moy * t_ecoulé + C_future * t_restant) / 24
+    # CALCUL DE LA CONCENTRATION MAXIMALE
     # ------------------------------------------------------
-    moyenne_finale = (
-        C_moy_actuelle * t_ecoule +
-        C_future * t_restant
-    ) / 24
+
+    C_max_autorisee = (
+
+        (
+
+            VLE_24H
+            *
+            duree_totale
+
+        )
+
+        -
+
+        (
+
+            C_moy_actuelle
+            *
+            t_ecoule
+
+        )
+
+    )
+
+    /
+
+    t_restant
+
+
+    # ======================================================
+    # AFFICHAGE DE LA PÉRIODE DE CALCUL
+    # ======================================================
 
     st.divider()
-    st.subheader("Résultats")
 
-    st.metric(
-        label="Concentration actuelle",
-        value=f"{C_future:.2f} mg/m³"
+
+    st.subheader(
+
+        "Période prise en compte"
+
     )
 
-    st.metric(
-        label="Moyenne journalière estimée (24 h)",
-        value=f"{moyenne_finale:.2f} mg/Nm³"
+
+    # Création de trois colonnes
+
+    col1, col2, col3 = st.columns(3)
+
+
+    # ------------------------------------------------------
+    # AFFICHAGE DE L'HEURE DE DÉBUT
+    # ------------------------------------------------------
+
+    with col1:
+
+
+        # Conversion de l'heure décimale
+        # vers un affichage HH:MM
+
+        heures_debut = int(
+
+            heure_debut
+
+        )
+
+
+        minutes_debut = int(
+
+            (heure_debut % 1) * 60
+
+        )
+
+
+        st.metric(
+
+            "Début du calcul",
+
+            f"{heures_debut:02d}:"
+            f"{minutes_debut:02d}"
+
+        )
+
+
+    # ------------------------------------------------------
+    # AFFICHAGE DU TEMPS ÉCOULÉ
+    # ------------------------------------------------------
+
+    with col2:
+
+
+        st.metric(
+
+            "Temps écoulé",
+
+            f"{t_ecoule:.2f} h"
+
+        )
+
+
+    # ------------------------------------------------------
+    # AFFICHAGE DU TEMPS RESTANT
+    # ------------------------------------------------------
+
+    with col3:
+
+
+        st.metric(
+
+            "Temps restant",
+
+            f"{t_restant:.2f} h"
+
+        )
+
+
+    # ======================================================
+    # AFFICHAGE DU RÉSULTAT PRINCIPAL
+    # ======================================================
+
+    st.divider()
+
+
+    st.subheader(
+
+        "Résultat"
+
     )
 
-    # ------------------------------------------------------
-    # ÉVALUATION DU TAUX PAR RAPPORT À LA VLE
-    # ------------------------------------------------------
-    taux = moyenne_finale / VLE_24H if VLE_24H > 0 else 0
-
-    if moyenne_finale > VLE_24H:
-        st.error(f"🔴 Dépassement de la VLE ({taux*100:.0f} %)")
-    elif taux >= 0.8:
-        st.warning(f"🟠 Proche de la limite ({taux*100:.0f} % de la VLE)")
-    else:
-        st.success(f"🟢 Conforme ({taux*100:.0f} % de la VLE)")
 
     # ------------------------------------------------------
-    # CALCUL DE LA CONCENTRATION MAXIMALE AUTORISÉE
+    # CAS 1 : DÉPASSEMENT DÉJÀ INÉVITABLE
     # ------------------------------------------------------
-    C_max_autorisee = (
-        (VLE_24H * 24) - (C_moy_actuelle * t_ecoule)
-    ) / t_restant
+    #
+    # Si la concentration maximale calculée est négative
+    # ou égale à zéro, cela signifie que la VLE est déjà
+    # dépassée ou qu'il n'est plus possible de respecter
+    # la limite avec le temps restant.
+    #
+    # ------------------------------------------------------
 
-    # Gestion cas dépassement déjà inévitable
     if C_max_autorisee <= 0:
-        st.error("Dépassement déjà inévitable sur la journée.")
+
+
+        st.error(
+
+            "⚠️ Dépassement déjà inévitable "
+            "sur la journée."
+
+        )
+
+
+    # ------------------------------------------------------
+    # CAS 2 : UNE CONCENTRATION MAXIMALE EST POSSIBLE
+    # ------------------------------------------------------
+
     else:
+
+
+        # Affichage du résultat dans un cadre visible
+
         st.markdown(
-    f"""
-    <div style="
-        background-color:#E8F4FD;
-        color:#FF0000;
-        padding:15px;
-        border-radius:10px;
-        font-size:22px;
-        font-weight:bold;
-        text-align:center;
-    ">
-    Concentration maximale autorisée jusqu'à 24h00 : 
-    {C_max_autorisee:.2f} mg/Nm³
-    </div>
-    """,
-    unsafe_allow_html=True
-    )
 
+            f"""
 
+            <div style="
+                background-color:#E8F4FD;
+                color:#FF0000;
+                padding:20px;
+                border-radius:10px;
+                font-size:26px;
+                font-weight:bold;
+                text-align:center;
+            ">
 
+            CONCENTRATION À NE PAS DÉPASSER
 
+            <br><br>
 
+            {C_max_autorisee:.2f} mg/Nm³
 
+            <br><br>
+
+            jusqu'à 24h00
+
+            </div>
+
+            """,
+
+            unsafe_allow_html=True
+
+        )
