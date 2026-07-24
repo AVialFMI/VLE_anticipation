@@ -109,7 +109,7 @@ st.markdown(
     """
     Outil permettant de déterminer la concentration maximale
     à ne pas dépasser jusqu'à 24h00 afin de respecter une
-    Valeur Limite d'Exposition (VLE).
+    Valeur Limite d'Emission Journalière (VLEJ).
     """
 )
 
