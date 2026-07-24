@@ -108,7 +108,7 @@ with col_title:
 st.markdown(
     """
     Outil permettant de déterminer la concentration maximale
-    à ne pas dépasser jusqu'à 24h00 afin de respecter une
+    à ne pas dépasser jusqu'à minuit afin de respecter une
     Valeur Limite d'Emission Journalière (VLEJ).
     """
 )
